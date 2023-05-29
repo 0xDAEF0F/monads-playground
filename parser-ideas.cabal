@@ -12,7 +12,8 @@ library
     exposed-modules:  
                         MyLib,
                         MonadicParsing,
-                        MyMaybe
+                        MyMaybe,
+                        ExerciseBirds
 
     -- Modules included in this library but not exported.
     -- other-modules:
