@@ -28,3 +28,15 @@ allPairs' p = do
   [(k, d) | p (k, d)]
 
 foo pair = let sum = uncurry (+) pair in sum < 20
+
+foldr' :: (a -> b -> b) -> b -> [a] -> b
+foldr' _ acc [] = acc
+foldr' f acc (x : xs) = f x (foldr' f acc xs)
+
+foldr1' f xs = foldr f (last xs) (init xs)
+
+foldl' :: (b -> a -> b) -> b -> [a] -> b
+foldl' _ acc [] = acc
+foldl' f acc (x : xs) = foldl' f (f acc x) xs
+
+foldl1' f (x : xs) = foldl' f x xs

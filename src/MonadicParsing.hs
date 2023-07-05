@@ -4,40 +4,36 @@
 module MonadicParsing () where
 
 import Control.Applicative ()
-import Data.Char ()
+import Data.Char (isAscii, isAsciiUpper, toLower)
 
-newtype Parser a = P (String -> [(a, String)])
+data SomeType = Function deriving (Show)
+
+newtype Parser a = P {runParse :: String -> [(a, String)]}
 
 instance Functor Parser where
   fmap :: (a -> b) -> Parser a -> Parser b
   fmap g f =
-    P
-      ( \inp -> case parse f inp of
-          [] -> []
-          [(v, out)] -> [(g v, out)]
-      )
+    P $ \inp -> case runParse f inp of
+      [] -> []
+      [(v, out)] -> [(g v, out)]
 
 instance Applicative Parser where
   pure :: a -> Parser a
-  pure v = P (\inp -> [(v, inp)])
+  pure v = P $ \inp -> [(v, inp)]
 
   (<*>) :: Parser (a -> b) -> Parser a -> Parser b
   pg <*> px =
-    P
-      ( \inp -> case parse pg inp of
-          [] -> []
-          [(g, out)] -> parse (fmap g px) out
-      )
+    P $ \inp -> case runParse pg inp of
+      [] -> []
+      [(g, out)] -> runParse (fmap g px) out
 
-parse :: Parser a -> String -> [(a, String)]
-parse (P p) inp = p inp
+instance Monad Parser where
+  (>>=) :: Parser a -> (a -> Parser b) -> Parser b
+  p >>= f = P $ \inp -> case runParse p inp of
+    [] -> []
+    [(v, out)] -> runParse (f v) out
 
-item :: Parser Char
-item = P $ \case
-  [] -> []
-  (x : xs) -> [(x, xs)]
-
-three :: Parser (Char, Char)
-three = pure g <*> item <*> item <*> item
-  where
-    g x y z = (x, z)
+myParser :: Parser SomeType
+myParser = P $ \case
+  ('f' : 'u' : 'n' : 'c' : 't' : 'i' : 'o' : 'n' : xs) -> [(Function, xs)]
+  _ -> []
